@@ -186,12 +186,18 @@ function acceptableAnswers(term) {
   return [normalize(term)];
 }
 
+const ROUND_SIZE = 7;
+
 function unmasteredIndices() {
   return TERMS.map((_, i) => i).filter(i => getLevel(i) < MASTERED);
 }
 
+function activeRoundIndices() {
+  return unmasteredIndices().slice(0, ROUND_SIZE);
+}
+
 function pickIndex() {
-  const pool = unmasteredIndices();
+  const pool = activeRoundIndices();
   if (pool.length === 0) return null;
   const weights = pool.map(i => MASTERED - getLevel(i));
   const total = weights.reduce((a, b) => a + b, 0);
@@ -205,8 +211,9 @@ function pickIndex() {
 
 function updateProgress() {
   const masteredCount = TERMS.filter((_, i) => getLevel(i) >= MASTERED).length;
+  const roundCount = activeRoundIndices().length;
   document.getElementById("progressLabel").textContent = masteredCount + " / " + TERMS.length + " mastered";
-  document.getElementById("remainingLabel").textContent = (TERMS.length - masteredCount) + " remaining";
+  document.getElementById("remainingLabel").textContent = roundCount > 0 ? "practicing " + roundCount + " terms this round" : "";
   document.getElementById("barFill").style.width = (masteredCount / TERMS.length * 100) + "%";
 }
 
