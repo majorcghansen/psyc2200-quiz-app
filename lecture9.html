@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PSYC2200 — Lecture 9 Learn</title>
+<style>
+  :root {
+    --bg: #f1f5f9;
+    --card: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --correct: #16a34a;
+    --incorrect: #dc2626;
+    --border: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 32px 16px;
+  }
+  .wrap { width: 100%; max-width: 640px; }
+  .backlink { display: inline-block; margin-bottom: 12px; color: var(--muted); font-size: 0.85rem; text-decoration: none; }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 20px; }
+  .progress-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--muted); margin-bottom: 6px; }
+  .bar-bg { background: var(--border); border-radius: 999px; height: 10px; overflow: hidden; margin-bottom: 24px; }
+  .bar-fill { background: var(--primary); height: 100%; transition: width .3s ease; }
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 28px 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.04);
+  }
+  .badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--primary);
+    background: #dbeafe;
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  .prompt { font-size: 1.15rem; line-height: 1.5; margin-bottom: 22px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt {
+    text-align: left;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background: #fff;
+    cursor: pointer;
+    font-size: 0.98rem;
+    transition: border-color .15s, background .15s;
+  }
+  .opt:hover:not(:disabled) { border-color: var(--primary); background: #f8faff; }
+  .opt:disabled { cursor: default; }
+  .opt.correct { border-color: var(--correct); background: #f0fdf4; color: var(--correct); }
+  .opt.incorrect { border-color: var(--incorrect); background: #fef2f2; color: var(--incorrect); }
+  .write-row { display: flex; gap: 10px; }
+  input[type=text] {
+    flex: 1;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    font-size: 0.98rem;
+  }
+  input[type=text]:focus { outline: none; border-color: var(--primary); }
+  button.primary {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.primary:hover { background: var(--primary-dark); }
+  .feedback { margin-top: 18px; padding: 14px 16px; border-radius: 10px; font-size: 0.95rem; }
+  .feedback.correct { background: #f0fdf4; color: var(--correct); }
+  .feedback.incorrect { background: #fef2f2; color: var(--incorrect); }
+  .feedback .answer { display: block; margin-top: 4px; color: var(--text); font-weight: 600; }
+  .continue-btn { margin-top: 16px; width: 100%; }
+  .done { text-align: center; padding: 40px 20px; }
+  .done h2 { margin-bottom: 8px; }
+  .footer { margin-top: 20px; text-align: center; }
+  .footer button {
+    background: none; border: none; color: var(--muted); font-size: 0.85rem; text-decoration: underline; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="backlink" href="index.html">&larr; All lectures</a>
+  <h1>PSYC2200 — Lecture 9</h1>
+  <div class="sub">Brain Development, Evolution &amp; the Spinal Cord — Learn Mode</div>
+  <div class="progress-row"><span id="progressLabel">0 / 0 mastered</span><span id="remainingLabel"></span></div>
+  <div class="bar-bg"><div class="bar-fill" id="barFill" style="width:0%"></div></div>
+  <div class="card" id="card"></div>
+  <div class="footer"><button id="resetBtn">Reset progress</button></div>
+</div>
+<script>
+const SLUG = "lecture9-psyc2200";
+const TERMS = [
+  { term: "Neural plate", def: "The first sign of the nervous system in the embryo — a thickened region of tissue that begins to separate from the rest of the developing embryo." },
+  { term: "Neural groove", def: "Formed when the neural plate sinks down (invaginates) and its edges rise up on either side." },
+  { term: "Neural tube", def: "Formed when the neural groove closes up into a hollow tube; retains a fluid-filled canal in the center." },
+  { term: "Neural crest", def: "A ridge that forms along the length of the neural tube, marking where the spine/backbone will be." },
+  { term: "Prosencephalon", def: "The most rostral of the three primary brain vesicles; becomes the forebrain, later splitting into the telencephalon and diencephalon." },
+  { term: "Mesencephalon", def: "The middle primary brain vesicle; becomes the midbrain and does not split further." },
+  { term: "Rhombencephalon", def: "The most caudal primary brain vesicle; becomes the hindbrain, later splitting into the metencephalon and myelencephalon." },
+  { term: "Telencephalon", def: "The most rostral secondary vesicle, derived from the prosencephalon (forebrain)." },
+  { term: "Diencephalon", def: "A secondary vesicle derived from the prosencephalon; contains structures such as the hypothalamus." },
+  { term: "Metencephalon", def: "A secondary vesicle derived from the rhombencephalon, closer to the midbrain." },
+  { term: "Myelencephalon", def: "The most caudal secondary vesicle, derived from the rhombencephalon." },
+  { term: "Endocast", def: "A plaster cast of the inside of a fossil skull, used to estimate what an extinct animal's brain looked like." },
+  { term: "Adaptation (brain evolution)", def: "The evolutionary elaboration of one or more parts of the same basic brain blueprint to suit an animal's environment and needs." },
+  { term: "CNS (Central Nervous System)", def: "The brain and spinal cord." },
+  { term: "PNS (Peripheral Nervous System)", def: "Everything in the nervous system except the brain and spinal cord." },
+  { term: "Somatic nervous system", def: "The division of the PNS that serves the body (skin and skeletal muscle) — includes sensory and motor components." },
+  { term: "Autonomic nervous system", def: "The division of the PNS that controls internal organs/viscera automatically, without conscious control." },
+  { term: "Afferent", def: "Sensory information traveling INTO the central nervous system." },
+  { term: "Efferent", def: "Motor information traveling OUT of the central nervous system." },
+  { term: "Sympathetic nervous system", def: "The autonomic division responsible for arousal ('fight or flight') — increases heart rate, dilates pupils, increases sweating." },
+  { term: "Parasympathetic nervous system", def: "The autonomic division responsible for relaxation ('rest and digest') — the opposite of the sympathetic system." },
+  { term: "Dorsal", def: "Toward the back." },
+  { term: "Ventral", def: "Toward the belly/front." },
+  { term: "Rostral", def: "Toward the nose/front." },
+  { term: "Caudal", def: "Toward the tail/rear." },
+  { term: "Anterior", def: "Toward the front; used interchangeably with ventral in the human body." },
+  { term: "Posterior", def: "Toward the back; used interchangeably with dorsal in the human body." },
+  { term: "Medial", def: "Toward the midline of the body." },
+  { term: "Lateral", def: "Toward the side of the body." },
+  { term: "Proximal", def: "Closer to the body core." },
+  { term: "Distal", def: "Farther from the body core." },
+  { term: "Dermatome", def: "The area of skin innervated by a single pair of spinal nerves." },
+  { term: "Cervical nerves", def: "The 8 pairs of spinal nerves in the neck region." },
+  { term: "Thoracic nerves", def: "The 12 pairs of spinal nerves in the torso/rib cage region." },
+  { term: "Lumbar nerves", def: "The 5 pairs of spinal nerves in the lower back region." },
+  { term: "Sacral nerves", def: "The 5 pairs of spinal nerves in the pelvic region." },
+  { term: "Coccygeal nerve", def: "The single pair of spinal nerves at the very bottom of the spinal cord." },
+  { term: "Gray matter", def: "Nervous system tissue containing cell bodies (no myelin) — appears gray." },
+  { term: "White matter", def: "Nervous system tissue containing myelinated axons — appears white due to the fatty myelin." },
+  { term: "Oligodendrocyte", def: "The glial cell that produces myelin in the central nervous system." },
+  { term: "Dorsal horn", def: "The part of the spinal cord's gray matter that receives incoming sensory (afferent) information." },
+  { term: "Ventral horn", def: "The part of the spinal cord's gray matter containing motor neuron cell bodies that send efferent output." },
+  { term: "Dorsal root", def: "The sensory nerve fiber entering the dorsal side of the spinal cord." },
+  { term: "Ventral root", def: "The motor nerve fiber exiting the ventral side of the spinal cord." },
+  { term: "Intervertebral foramen", def: "The space between vertebrae where spinal nerves enter and exit." },
+  { term: "Dorsal root ganglion", def: "A collection of sensory neuron cell bodies located just outside the spinal cord." },
+  { term: "Ganglion", def: "A collection of cell bodies located outside the central nervous system." },
+  { term: "Neuromuscular junction", def: "The synapse between a motor neuron and a muscle fiber." },
+  { term: "Acetylcholine", def: "The neurotransmitter released at the neuromuscular junction that causes muscle contraction." }
+];
+
+const STORAGE_KEY = "quizlearn_" + SLUG;
+let levels = {};
+try { levels = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch(e) { levels = {}; }
+
+const MASTERED = 3;
+let current = null;
+let answered = false;
+
+function getLevel(i) { return levels[i] || 0; }
+function setLevel(i, v) { levels[i] = Math.max(0, Math.min(MASTERED, v)); save(); }
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(levels)); }
+
+function normalize(s) {
+  return (s || "").toLowerCase().replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, " ").trim();
+}
+function acceptableAnswers(term) {
+  const m = term.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
+  if (m) return [normalize(m[1]), normalize(m[2]), normalize(term)];
+  return [normalize(term)];
+}
+
+function unmasteredIndices() {
+  return TERMS.map((_, i) => i).filter(i => getLevel(i) < MASTERED);
+}
+
+function pickIndex() {
+  const pool = unmasteredIndices();
+  if (pool.length === 0) return null;
+  const weights = pool.map(i => MASTERED - getLevel(i));
+  const total = weights.reduce((a, b) => a + b, 0);
+  let r = Math.random() * total;
+  for (let k = 0; k < pool.length; k++) {
+    r -= weights[k];
+    if (r <= 0) return pool[k];
+  }
+  return pool[pool.length - 1];
+}
+
+function updateProgress() {
+  const masteredCount = TERMS.filter((_, i) => getLevel(i) >= MASTERED).length;
+  document.getElementById("progressLabel").textContent = masteredCount + " / " + TERMS.length + " mastered";
+  document.getElementById("remainingLabel").textContent = (TERMS.length - masteredCount) + " remaining";
+  document.getElementById("barFill").style.width = (masteredCount / TERMS.length * 100) + "%";
+}
+
+function randomDistractors(correctIdx, count) {
+  const pool = TERMS.map((_, i) => i).filter(i => i !== correctIdx);
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, count).map(i => TERMS[i].term);
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function renderQuestion() {
+  answered = false;
+  updateProgress();
+  const idx = pickIndex();
+  if (idx === null) { renderDone(); return; }
+  const level = getLevel(idx);
+  const type = level < 2 ? "mc" : "written";
+  current = { idx, type };
+  const term = TERMS[idx];
+  const card = document.getElementById("card");
+
+  if (type === "mc") {
+    const options = randomDistractors(idx, 3).concat([term.term]);
+    for (let i = options.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [options[i], options[j]] = [options[j], options[i]];
+    }
+    card.innerHTML =
+      '<span class="badge">Multiple choice</span>' +
+      '<div class="prompt">' + escapeHtml(term.def) + '</div>' +
+      '<div class="options">' +
+      options.map(o => '<button class="opt" data-answer="' + escapeHtml(o) + '">' + escapeHtml(o) + '</button>').join("") +
+      '</div>' +
+      '<div id="feedbackArea"></div>';
+    card.querySelectorAll(".opt").forEach(btn => {
+      btn.addEventListener("click", () => handleMcAnswer(btn, term.term));
+    });
+  } else {
+    card.innerHTML =
+      '<span class="badge">Type the answer</span>' +
+      '<div class="prompt">' + escapeHtml(term.def) + '</div>' +
+      '<div class="write-row">' +
+      '<input type="text" id="writtenInput" placeholder="Type the term..." autocomplete="off">' +
+      '<button class="primary" id="submitWritten">Submit</button>' +
+      '</div>' +
+      '<div id="feedbackArea"></div>';
+    const input = document.getElementById("writtenInput");
+    input.focus();
+    const submit = () => handleWrittenAnswer(input.value, term.term);
+    document.getElementById("submitWritten").addEventListener("click", submit);
+    input.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
+  }
+}
+
+function handleMcAnswer(btn, correctTerm) {
+  if (answered) return;
+  answered = true;
+  const chosen = btn.dataset.answer;
+  const correct = chosen === correctTerm;
+  document.querySelectorAll(".opt").forEach(o => {
+    o.disabled = true;
+    if (o.dataset.answer === correctTerm) o.classList.add("correct");
+    else if (o === btn) o.classList.add("incorrect");
+  });
+  finishAnswer(correct, correctTerm);
+}
+
+function handleWrittenAnswer(value, correctTerm) {
+  if (answered) return;
+  answered = true;
+  const accepted = acceptableAnswers(correctTerm);
+  const correct = accepted.includes(normalize(value));
+  document.getElementById("writtenInput").disabled = true;
+  document.getElementById("submitWritten").disabled = true;
+  finishAnswer(correct, correctTerm);
+}
+
+function finishAnswer(correct, correctTerm) {
+  const idx = current.idx;
+  setLevel(idx, getLevel(idx) + (correct ? 1 : -1));
+  const fb = document.getElementById("feedbackArea");
+  fb.innerHTML =
+    '<div class="feedback ' + (correct ? "correct" : "incorrect") + '">' +
+    (correct ? "Correct!" : "Not quite.") +
+    '<span class="answer">' + escapeHtml(correctTerm) + '</span>' +
+    '</div>' +
+    '<button class="primary continue-btn" id="continueBtn">Continue</button>';
+  document.getElementById("continueBtn").addEventListener("click", renderQuestion);
+  updateProgress();
+}
+
+function renderDone() {
+  document.getElementById("card").innerHTML =
+    '<div class="done"><h2>All terms mastered!</h2><p>Great work — you have learned every term in this set.</p></div>';
+}
+
+document.getElementById("resetBtn").addEventListener("click", () => {
+  if (confirm("Reset all progress for this lecture?")) {
+    levels = {};
+    save();
+    renderQuestion();
+  }
+});
+
+renderQuestion();
+</script>
+</body>
+</html>
