@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PSYC2200 — Matching Game</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <a class="backlink" href="index.html">&larr; All lectures</a>
+  <h1>PSYC2200 — Matching Game</h1>
+  <div class="sub">Pick a lecture and match each term to its definition as fast as you can.</div>
+
+  <div class="match-select-row">
+    <select id="lectureSelect"></select>
+    <select id="roundSizeSelect">
+      <option value="6">6 pairs</option>
+      <option value="8" selected>8 pairs</option>
+      <option value="10">10 pairs</option>
+      <option value="12">12 pairs</option>
+    </select>
+    <button class="primary" id="newRoundBtn">New round</button>
+  </div>
+
+  <div class="match-stats">
+    <span id="movesLabel">Moves: 0</span>
+    <span id="timeLabel">Time: 0s</span>
+    <span id="matchedLabel">Matched: 0 / 0</span>
+  </div>
+
+  <div id="gameArea"></div>
+</div>
+
+<script src="data.js"></script>
+<script>
+const lectureSelect = document.getElementById("lectureSelect");
+const roundSizeSelect = document.getElementById("roundSizeSelect");
+const newRoundBtn = document.getElementById("newRoundBtn");
+const gameArea = document.getElementById("gameArea");
+const movesLabel = document.getElementById("movesLabel");
+const timeLabel = document.getElementById("timeLabel");
+const matchedLabel = document.getElementById("matchedLabel");
+
+LECTURE_ORDER.forEach(slug => {
+  const opt = document.createElement("option");
+  opt.value = slug;
+  opt.textContent = LECTURES[slug].title + " — " + LECTURES[slug].subtitle;
+  lectureSelect.appendChild(opt);
+});
+
+const params = new URLSearchParams(location.search);
+const requested = params.get("lecture");
+if (requested && LECTURES[requested]) lectureSelect.value = requested;
+
+let tiles = [];
+let selected = [];
+let moves = 0;
+let matchedCount = 0;
+let totalPairs = 0;
+let startTime = null;
+let timerInterval = null;
+let locked = false;
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function startTimer() {
+  stopTimer();
+  startTime = Date.now();
+  timerInterval = setInterval(() => {
+    const secs = Math.floor((Date.now() - startTime) / 1000);
+    timeLabel.textContent = "Time: " + secs + "s";
+  }, 1000);
+}
+function stopTimer() {
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = null;
+}
+
+function newRound() {
+  stopTimer();
+  const slug = lectureSelect.value;
+  const terms = LECTURES[slug].terms;
+  const roundSize = Math.min(Number(roundSizeSelect.value), terms.length);
+
+  const pairIdx = shuffle(terms.map((_, i) => i)).slice(0, roundSize);
+  tiles = [];
+  pairIdx.forEach((termIdx, pairId) => {
+    tiles.push({ pairId, kind: "term", text: terms[termIdx].term });
+    tiles.push({ pairId, kind: "def", text: terms[termIdx].def });
+  });
+  shuffle(tiles);
+
+  selected = [];
+  moves = 0;
+  matchedCount = 0;
+  totalPairs = roundSize;
+  locked = false;
+  movesLabel.textContent = "Moves: 0";
+  matchedLabel.textContent = "Matched: 0 / " + totalPairs;
+  timeLabel.textContent = "Time: 0s";
+
+  renderGrid();
+  startTimer();
+}
+
+function renderGrid() {
+  gameArea.innerHTML = '<div class="match-grid" id="matchGrid"></div>';
+  const grid = document.getElementById("matchGrid");
+  tiles.forEach((tile, i) => {
+    const btn = document.createElement("button");
+    btn.className = "match-tile" + (tile.kind === "term" ? " term-tile" : "");
+    btn.textContent = tile.text;
+    btn.dataset.i = i;
+    btn.addEventListener("click", () => handleTileClick(i, btn));
+    grid.appendChild(btn);
+  });
+}
+
+function handleTileClick(i, btn) {
+  if (locked) return;
+  if (btn.classList.contains("matched") || btn.classList.contains("selected")) return;
+  if (selected.length >= 2) return;
+
+  btn.classList.add("selected");
+  selected.push({ i, btn });
+
+  if (selected.length === 2) {
+    moves++;
+    movesLabel.textContent = "Moves: " + moves;
+    const [a, b] = selected;
+    const match = tiles[a.i].pairId === tiles[b.i].pairId && tiles[a.i].kind !== tiles[b.i].kind;
+    if (match) {
+      a.btn.classList.remove("selected");
+      b.btn.classList.remove("selected");
+      a.btn.classList.add("matched");
+      b.btn.classList.add("matched");
+      matchedCount++;
+      matchedLabel.textContent = "Matched: " + matchedCount + " / " + totalPairs;
+      selected = [];
+      if (matchedCount === totalPairs) {
+        stopTimer();
+        const secs = Math.floor((Date.now() - startTime) / 1000);
+        setTimeout(() => {
+          gameArea.innerHTML =
+            '<div class="done-banner"><h2>Round complete!</h2><p>' +
+            totalPairs + ' pairs matched in ' + moves + ' moves and ' + secs + 's.</p>' +
+            '<button class="primary" id="playAgainBtn">Play again</button></div>';
+          document.getElementById("playAgainBtn").addEventListener("click", newRound);
+        }, 300);
+      }
+    } else {
+      locked = true;
+      a.btn.classList.add("wrong");
+      b.btn.classList.add("wrong");
+      setTimeout(() => {
+        a.btn.classList.remove("selected", "wrong");
+        b.btn.classList.remove("selected", "wrong");
+        selected = [];
+        locked = false;
+      }, 700);
+    }
+  }
+}
+
+newRoundBtn.addEventListener("click", newRound);
+lectureSelect.addEventListener("change", newRound);
+roundSizeSelect.addEventListener("change", newRound);
+
+newRound();
+</script>
+</body>
+</html>

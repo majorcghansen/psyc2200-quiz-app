@@ -18,7 +18,8 @@
   }
   .wrap { width: 100%; max-width: 480px; }
   h1 { font-size: 1.5rem; margin-bottom: 4px; }
-  p.sub { color: #64748b; margin-bottom: 28px; }
+  p.sub { color: #64748b; margin-bottom: 20px; }
+  h2.section { font-size: 0.85rem; text-transform: uppercase; letter-spacing: .04em; color: #64748b; margin: 28px 0 10px; }
   a.card {
     display: block;
     background: #fff;
@@ -33,12 +34,22 @@
   a.card:hover { transform: translateY(-2px); }
   a.card .title { font-weight: 700; font-size: 1.05rem; margin-bottom: 4px; }
   a.card .desc { color: #64748b; font-size: 0.88rem; }
+  a.card.match { border: 1.5px solid #2563eb; }
+  p.note { color: #94a3b8; font-size: 0.82rem; margin-top: 24px; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>PSYC2200 — Learn Mode</h1>
-  <p class="sub">Pick a lecture to drill. Progress saves automatically in this browser.</p>
+  <p class="sub">Pick a lecture to drill, Quizlet-Learn style. Switch between Term&rarr;Definition and Definition&rarr;Term any time. Progress saves automatically in this browser.</p>
+
+  <a class="card match" href="match.html">
+    <div class="title">Matching game</div>
+    <div class="desc">Pick any lecture and race to match every term to its definition</div>
+  </a>
+
+  <h2 class="section">Flashcards by lecture</h2>
+
   <a class="card" href="lecture9.html">
     <div class="title">Lecture 9</div>
     <div class="desc">Brain development, evolution, and the spinal cord</div>
@@ -47,6 +58,28 @@
     <div class="title">Lecture 10</div>
     <div class="desc">Reflexes, brainstem, cranial nerves, midbrain, diencephalon, telencephalon &amp; cerebral cortex</div>
   </a>
+  <a class="card" href="lecture11.html">
+    <div class="title">Lecture 11</div>
+    <div class="desc">Neural development: chemoaffinity, synaptogenesis, apoptosis &amp; plasticity</div>
+  </a>
+  <a class="card" href="lecture13.html">
+    <div class="title">Lecture 13</div>
+    <div class="desc">Vision: LGN, visual cortex, feature detection &amp; critical-period plasticity</div>
+  </a>
+  <a class="card" href="lecture14.html">
+    <div class="title">Lecture 14</div>
+    <div class="desc">Audition: sound, the ear, the cochlea &amp; pitch coding</div>
+  </a>
+  <a class="card" href="lecture15.html">
+    <div class="title">Lecture 15</div>
+    <div class="desc">Auditory pathways, sound localization &amp; the vestibular system</div>
+  </a>
+  <a class="card" href="lecture16.html">
+    <div class="title">Lecture 16</div>
+    <div class="desc">Taste, smell &amp; the somatosensory system</div>
+  </a>
+
+  <p class="note">Lecture 12 isn't included — no transcript was available for it.</p>
 </div>
 </body>
 </html>
