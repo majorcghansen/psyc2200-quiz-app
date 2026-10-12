@@ -41,6 +41,9 @@ h1 { font-size: 1.4rem; margin: 0 0 4px; }
   transition: border-color .15s, background .15s, color .15s;
 }
 .mode-btn.active { border-color: var(--primary); background: #eff6ff; color: var(--primary); }
+.mc-only-row { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; font-size: 0.85rem; color: var(--muted); }
+.mc-only-row input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+.mc-only-row label { cursor: pointer; }
 .card {
   background: var(--card);
   border-radius: 16px;

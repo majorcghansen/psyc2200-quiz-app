@@ -10,6 +10,9 @@ try { levels = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch (e
 const MODE_KEY = "quizmode_" + SLUG;
 let mode = localStorage.getItem(MODE_KEY) || "def2term"; // "def2term" | "term2def"
 
+const MC_ONLY_KEY = "mcOnly_" + SLUG;
+let mcOnly = localStorage.getItem(MC_ONLY_KEY) === "1";
+
 const MASTERED = 3;
 const ROUND_SIZE = 7;
 let current = null;
@@ -98,8 +101,9 @@ function renderQuestion() {
   if (idx === null) { renderDone(); return; }
   const level = getLevel(idx);
   // Writing out a full definition from memory isn't practical, so term->definition
-  // mode always uses multiple choice; definition->term mode graduates to free-text.
-  const type = (mode === "term2def") ? "mc" : (level < 2 ? "mc" : "written");
+  // mode always uses multiple choice; definition->term mode graduates to free-text
+  // unless the user has forced multiple-choice-only mode.
+  const type = (mcOnly || mode === "term2def") ? "mc" : (level < 2 ? "mc" : "written");
   current = { idx, type };
   const card = document.getElementById("card");
 
@@ -185,6 +189,14 @@ document.getElementById("resetBtn").addEventListener("click", () => {
 });
 document.getElementById("modeDef2Term").addEventListener("click", () => setMode("def2term"));
 document.getElementById("modeTerm2Def").addEventListener("click", () => setMode("term2def"));
+
+const mcOnlyToggle = document.getElementById("mcOnlyToggle");
+mcOnlyToggle.checked = mcOnly;
+mcOnlyToggle.addEventListener("change", () => {
+  mcOnly = mcOnlyToggle.checked;
+  localStorage.setItem(MC_ONLY_KEY, mcOnly ? "1" : "0");
+  renderQuestion();
+});
 
 applyModeButtons();
 renderQuestion();
